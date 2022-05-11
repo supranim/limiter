@@ -1,5 +1,5 @@
 <p align="center">
-A starter template for developing Supranim packages
+A simple to use rate limiting library, with built-in memory cache,<br>provides an easy way to limit any action during a specific period of time.
 </p>
 
 ## ✨ Key features
