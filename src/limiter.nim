@@ -24,24 +24,24 @@ type
             ## The number of minutes until the rate limit is reset.
         callback: proc() {.closure.}
 
-    LimiterHandler = object
+    Limiter = object
         limiters: TableRef[string, Limit]
 
-var Limiter* = LimiterHandler()
+var RateLimiter* = Limiter()
 
-proc attempt*[L: LimiterHandler](key: string, maxAttempts: int, callback: proc(), secsToWait: TimeInterval = minute(1)) =
+proc attempt*[L: Limiter](limiter: var L, key: string, maxAttempts: int, callback: proc(), secsToWait: TimeInterval = minute(1)) =
     ## Attempts to execute a callback if it's not limited.
 
-proc availableIn*[L: LimiterHandler](limiter: var L, key: string): TimeInterval =
+proc availableIn*[L: Limiter](limiter: var L, key: string): TimeInterval =
     ## Get the number of seconds until the "key" is accessible again.
     result = limiter[key].timeToWait
 
-proc tooManyAttempts*[L: LimiterHandler](limiter: var L, key: string, maxAttempts: int)
+proc tooManyAttempts*[L: Limiter](limiter: var L, key: string, maxAttempts: int)
     ## Determine if the given key has been "accessed" too many times.
     runnableExamples:
         if RateLimiter.tooManyAttempts("message", user.id, perMinute = 5)
             let remaning = RateLimiter::availableIn("message", user.id);
             return fmt"You may try again in {remaning} seconds.";
 
-proc hit*[L: LimiterHandler](limiter: var L) =
+proc hit*[L: Limiter](limiter: var L) =
     ## Increment the counter for a given key for a given decay time.

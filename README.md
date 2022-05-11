@@ -1,5 +1,7 @@
 <p align="center">
-A simple to use HTTP rate limiting library. Built-in memory cache,<br>provides an easy way to limit any action during a specific period of time.
+    <img src="/.github/supranim-limiter.png" height="65px" alt="Supranim Rate Limiter"><br>
+    A simple to use HTTP rate limiting library. Built-in memory cache,<br>
+    provides an easy way to limit any action during a specific period of time.
 </p>
 
 ## ✨ Key features
