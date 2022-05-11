@@ -1,5 +1,5 @@
 <p align="center">
-A simple to use rate limiting library, with built-in memory cache,<br>provides an easy way to limit any action during a specific period of time.
+A simple to use HTTP rate limiting library. Built-in memory cache,<br>provides an easy way to limit any action during a specific period of time.
 </p>
 
 ## ✨ Key features
