@@ -45,6 +45,11 @@ proc hit*[L: Limiter](limiter: var L, keyId: string) =
     if limiter.hasKey(keyId):
         inc limiter.limits[keyId].hits
 
+proc getHits*[L: Limiter](limiter: var L, keyId: string): int =
+    ## Get number of hits for given ``keyId``
+    if limiter.hasKey(keyId):
+        result = limiter.limits[keyId].hits
+
 proc reset*[L: Limiter](limiter: var L, keyId: string) =
     ## Reset (delete) the limit for given key
     if limiter.hasKey(keyId):

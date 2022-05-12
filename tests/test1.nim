@@ -1,12 +1,24 @@
-# This is just an example to get you started. You may wish to put all of your
-# tests into a single file, or separate them into multiple `test1`, `test2`
-# etc. files (better names are recommended, just make sure the name starts with
-# the letter 't').
-#
-# To run these tests, simply execute `nimble test`.
+import std/unittest
+from std/os import sleep
 
-import unittest
+import limiter
 
-import starter
-test "can add":
-  check add(5, 5) == 10
+test "can get key by area:user_id":
+    let getUserId = RateLimiter.getId("login", "cec91ebed1de")
+    check(getUserId == "login:cec91ebed1de")
+
+test "can limit access by no. of attempts":
+    var
+        status: int
+        attempts = 0
+    let getUserId = RateLimiter.getId("login", "cec91ebed1de")
+    while true:
+        if attempts == 10: break
+        RateLimiter.attempt(getUserId, maxAttempts = 5) do(timeToWait: Duration):
+            status = 429
+        inc attempts
+        sleep(100)
+
+    check(RateLimiter.getHits(getUserId) == 10)
+    let remaining = RateLimiter.availableIn(getUserId)
+    check(remaining < initDuration(minutes = 1))
