@@ -17,11 +17,9 @@ export times
 
 type
 
-    CallbackLimiter = proc(timeToWait: int64) {.closure.}
+    CallbackLimiter = proc(timeToWait: Duration) {.closure.}
 
     Limit = ref object
-        key: string
-            ## The rate limit signature key.
         hits: int
             ## Counting the number of attempts
         maxAttempts: int
@@ -35,35 +33,47 @@ type
 
 var RateLimiter* = Limiter(limits: newTable[string, Limit]())
 
-proc hit*[L: Limiter](limiter: var L, key: string) =
+proc getId*[L: Limiter](limiter: L, area, key: string): string =
+    result = area & ":" & key
+
+proc hasKey[L: Limiter](limiter: var L, keyId: string): bool =
+    ## Determine if given key has been limited
+    result = limiter.limits.hasKey(keyId)
+
+proc hit*[L: Limiter](limiter: var L, keyId: string) =
     ## Increment the counter for a given key for a given decay time.
-    inc limiter.limits[key].hits
+    if limiter.hasKey(keyId):
+        inc limiter.limits[keyId].hits
 
-proc reset*[L: Limiter](limiter: var L, key: string) =
-    ## Reset the counter for given key
-    limiter.limits.del(key)
+proc reset*[L: Limiter](limiter: var L, keyId: string) =
+    ## Reset (delete) the limit for given key
+    if limiter.hasKey(keyId):
+        limiter.limits.del(keyId)
 
-proc attempt*[L: Limiter](limiter: var L, key: string, maxAttempts: int, callback: CallbackLimiter, timeToWait: TimeInterval = 1.minutes) =
-    ## Attempts to execute a callback if it's not limited.
-    if limiter.limits.hasKey(key):
-        limiter.hit(key)
-        if limiter.limits[key].hits >= limiter.limits[key].maxAttempts:
-            let remaining = limiter.limits[key].timeToWait - now()
-            if remaining >= initDuration(minutes = 0):
-                callback(remaining.inSeconds)
-            else:
-                limiter.reset key
-    else:
-        limiter.limits[key] = Limit(key: key, maxAttempts: maxAttempts, timeToWait: now() + timeToWait, callback: callback)
-        limiter.hit(key)
-
-proc availableIn*[L: Limiter](limiter: var L, key: string): TimeInterval =
+proc availableIn*[L: Limiter](limiter: var L, keyId: string): Duration =
     ## Get the number of seconds until the "key" is accessible again.
-    result = limiter[key].timeToWait
+    if limiter.hasKey(keyId):
+        result = limiter.limits[keyId].timeToWait - now()
 
-proc tooManyAttempts*[L: Limiter](limiter: var L, key: string, maxAttempts: int) =
-    ## Determine if the given key has been "accessed" too many times.
+proc attempts[L: Limiter](limiter: var L, keyId: string, maxAttempts: int,
+                          callback: CallbackLimiter, timeToWait: TimeInterval = 1.minutes) =
+    ## Adds a new Limiter for given key. 
+    ## This includes 1 hit when initializing ``Limit`` object
+    limiter.limits[keyId] = Limit(hits: 1, maxAttempts: maxAttempts,
+                                    timeToWait: now() + timeToWait,
+                                    callback: callback)
+
+proc attempt*[L: Limiter](limiter: var L, key: string, maxAttempts: int,
+                          callback: CallbackLimiter, timeToWait: TimeInterval = 1.minutes) =
+    ## Attempts to execute a callback if it's not limited.
     runnableExamples:
-        if RateLimiter.tooManyAttempts(user.id, perMinute = 5):
-            let remaning = RateLimiter.availableIn(user.id)
-            return fmt"You may try again in {remaning} seconds."
+        RateLimiter.attempt("send.message", user.id, maxAttempts = 5) do(timeToWait: Duration):
+            echo "Too many attempts. Try again in " & $(timeToWait) & " seconds"
+    if limiter.hasKey(key):
+        limiter.hit key
+        if limiter.limits[key].hits >= limiter.limits[key].maxAttempts:
+            let remaining = limiter.availableIn key
+            if remaining >= initDuration(minutes = 0):
+                callback(remaining)
+            else: limiter.reset key
+    else: limiter.attempts(key, maxAttempts, callback, timeToWait)
