@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="/.github/supranim-limiter.png" height="65px" alt="Supranim Rate Limiter"><br>
+    <img src="https://raw.githubusercontent.com/supranim/limiter/main/.github/supranim-limiter.png" height="65px" alt="Supranim Rate Limiter"><br>
     A simple to use HTTP rate limiting library. Built-in memory cache,<br>
     provides an easy way to limit any action during a specific period of time.
 </p>
