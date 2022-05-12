@@ -6,7 +6,30 @@
 
 ## ✨ Key features
 - [x] Framework Agnostic
+- [x] Dependency-free
 - [x] Open Source | `MIT` License
+
+## Install
+```bash
+nimble install limiter
+```
+
+## Examples
+
+Using **Limiter** withing your Supranim application
+```nim
+import supranim, limiter
+
+proc sendConfirmationLink*(req: Request, res: Response) =
+    ## Example of a ``POST`` procedure to handle confirmation links.
+    let getUserId = RateLimiter.getId("send.message", 1234)
+    RateLimiter.attempt(getUserId, maxAttempts = 3) do(remaining: Duration):
+        res.json("Too many attempts. Try again in " & $(remaining.inSeconds) & " seconds", Http429)
+    # ...
+    # handle confirmation links...
+    # ...
+    res.json("Confirmation link sent. Check your e-mail")
+```
 
 ### ❤ Contributions
 If you like this project you can contribute to Tim project by opening new issues, fixing bugs, contribute with code, ideas and you can even [donate via PayPal address](https://www.paypal.com/donate/?hosted_button_id=RJK3ZTDWPL55C) 🥰
