@@ -16,7 +16,7 @@ nimble install limiter
 
 ## Examples
 
-Using **Limiter** withing your Supranim application
+Using **Limiter** from your Supranim application
 ```nim
 import supranim, limiter
 
