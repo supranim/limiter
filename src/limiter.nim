@@ -31,7 +31,10 @@ type
     Limiter = object
         limits: TableRef[string, Limit]
 
-var RateLimiter* = Limiter(limits: newTable[string, Limit]())
+when compileOption("threads"):
+    var RateLimiter* {.threadvar.}: Limiter
+else:
+    var RateLimiter* = Limiter(limits: newTable[string, Limit]())
 
 proc getId*[L: Limiter](limiter: L, area, key: string): string =
     result = area & ":" & key
