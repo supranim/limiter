@@ -1,16 +1,10 @@
 # A simple to use HTTP rate limiting library to limit
 # any action during a specific period of time.
 # 
-# This package is part of Supranim Hyper Framework.
-# 
-# Supranim is a simple MVC-style web framework for building
-# fast web applications, REST API microservices and other cool things.
 #
-# (c) 2021 Limiter is released under MIT License
-#          Made by Humans from OpenPeep
-#          
-#          https://github.com/supranim
-#          https://supranim.com
+# (c) 2022 Made by Humans from OpenPeep | MIT License
+#     https://github.com/supranim
+#     https://supranim.com
 
 import std/[tables, times]
 export times
@@ -32,8 +26,12 @@ type
         limits: TableRef[string, Limit]
 
 when compileOption("threads"):
+    # Create a singleton instance of RateLimiter
+    # with multi threading support
     var RateLimiter* {.threadvar.}: Limiter
 else:
+    # Create a singleton instance of RateLimiter
+    # when not compiling with threads.
     var RateLimiter* = Limiter(limits: newTable[string, Limit]())
 
 proc getId*[L: Limiter](limiter: L, area, key: string): string =
@@ -74,9 +72,6 @@ proc attempts[L: Limiter](limiter: var L, keyId: string, maxAttempts: int,
 proc attempt*[L: Limiter](limiter: var L, key: string, maxAttempts: int,
                           callback: CallbackLimiter, timeToWait: TimeInterval = 1.minutes) =
     ## Attempts to execute a callback if it's not limited.
-    runnableExamples:
-        RateLimiter.attempt("send.message", user.id, maxAttempts = 5) do(timeToWait: Duration):
-            echo "Too many attempts. Try again in " & $(timeToWait) & " seconds"
     if limiter.hasKey(key):
         limiter.hit key
         if limiter.limits[key].hits >= limiter.limits[key].maxAttempts:
