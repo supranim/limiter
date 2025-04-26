@@ -1,47 +1,38 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/supranim/limiter/main/.github/supranim-limiter.png" height="65px" alt="Supranim Rate Limiter"><br>
-    A simple to use rate limiting library for HTTP apps. Built-in memory cache,<br>
-    provides an easy way to limit any action during a specific period of time.
+  <img src="https://raw.githubusercontent.com/supranim/limiter/main/.github/supranim-limiter.png" height="65px" alt="Supranim Rate Limiter"><br>
+  A simple to use rate limiting library for web apps.<br>
+  Provides an easy way to limit any action during a specific period of time.
 </p>
 
-## ✨ Key features
-- [x] Framework Agnostic
-- [ ] Persistent Memory w/ Supranim Storage driver
-- [x] Dependency-free
-- [x] Open Source | `MIT` License
+## Key features
+- **Simple to use**: Easy to integrate into your existing codebase.
 
-## Install
-```bash
-nimble install limiter
-```
-
-## Examples
-
-Using **Limiter** from your Supranim application
 ```nim
-import supranim, limiter
+import pkg/limiter
 
-proc sendConfirmationLink*(req: Request, res: Response) =
-    ## Example of a ``POST`` procedure to handle confirmation links.
-    let getUserId = RateLimiter.getId("send.message", 1234)
-    RateLimiter.attempt(getUserId, maxAttempts = 3) do(remaining: Duration):
-        res.json("Too many attempts. Try again in " & $(remaining.inSeconds) & " seconds", Http429)
-    # ...
-    # handle confirmation links...
-    # ...
-    res.json("Confirmation link sent. Check your e-mail")
+# Create a new rate limiter with a limit of 5 requests per minute
+var rateLimiter = Limiter(
+  maximumHits: 5'u,
+  timeLimit: initDuration(seconds = 1),
+  timeToWait: initDuration(seconds = 2)
+)
+
+# Simulate hits
+for i in 0 ..< 5:
+  if i < 5:
+    assert rateLimiter.hit("127.0.0.1")
+  else:
+    assert not rateLimiter.hit("127.0.0.1")
+sleep(3000)
+assert rateLimiter.hit("127.0.0.1")
 ```
 
-### ❤ Contributions
-If you like this project you can contribute to this project by opening new issues, fixing bugs, contribute with code, ideas and you can even [donate via PayPal address](https://www.paypal.com/donate/?hosted_button_id=RJK3ZTDWPL55C) 🥰
-
-### 👑 Discover Nim language
-<strong>What's Nim?</strong> Nim is a statically typed compiled systems programming language. It combines successful concepts from mature languages like Python, Ada and Modula. [Find out more about Nim language](https://nim-lang.org/)
-
-<strong>Why Nim?</strong> Performance, fast compilation and C-like freedom. We want to keep code clean, readable, concise, and close to our intention. Also a very good language to learn in 2022.
+### ❤ Contributions & Support
+- 🐛 Found a bug? [Create a new Issue](https://github.com/supranim/limiter/issues)
+- 👋 Wanna help? [Fork it!](https://github.com/supranim/limiter/fork)
+- 😎 [Get €20 in cloud credits from Hetzner](https://hetzner.cloud/?ref=Hm0mYGM9NxZ4)
+- 🥰 [Donate via PayPal address](https://www.paypal.com/donate/?hosted_button_id=RJK3ZTDWPL55C)
 
 ### 🎩 License
-Limiter is an Open Source Software released under `MIT` license. [Made by Humans from OpenPeep](https://github.com/openpeep).<br>
-Copyright &copy; 2022 Supranim & OpenPeep &mdash; All rights reserved.
-
-<a href="https://hetzner.cloud/?ref=Hm0mYGM9NxZ4"><img src="https://openpeep.ro/banners/openpeep-footer.png" width="100%"></a>
+MIT license. [Made by Humans from OpenPeeps](https://github.com/openpeeps).<br>
+Copyright &copy; 2025 OpenPeeps & Contributors &mdash; All rights reserved.
